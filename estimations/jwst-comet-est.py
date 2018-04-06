@@ -66,14 +66,11 @@ def dust_estimate(eph, args, meta):
     from sbpy.activity import Afrho, Efrho
 
     wave = constant_spectral_resolution(0.5, 30, args.R)
+    wave = u.Quantity(wave, 'um')
     if args.m:
-        mH = args.m - 5 * np.log10(eph['delta'])
-        afrho = Afrho(10**(-0.21 * mH + 5.69), 'cm')
-
-        if args.gassy:
-            afrho /= 2.9
-        elif args.dusty:
-            afrho *= 2.9
+        mH = args.m - 5 * np.log10(eph['delta'].to('au').value)
+        afrho = Afrho(10**(-0.17 * mH + 3.77), 'cm')
+        afrho *= 10**(0.69 * (args.dusty - args.gassy))
     else:
         afrho = Afrho(args.afrho, 'cm')
 
@@ -85,6 +82,8 @@ def dust_estimate(eph, args, meta):
                 names=('wave', 'total', 'F_sca', 'F_th'))
 
     est.meta = meta
+    est.meta['phase function'] = Afrho(1, 'cm').to_phase(
+        eph['phase'], 0 * u.deg).value
     est.meta['ef2af'] = args.ef2af
     est.meta['Tscale'] = args.Tscale
     est.meta['Afrho'] = str(afrho)
@@ -95,7 +94,7 @@ def dust_estimate(eph, args, meta):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Generate model comet spectra for JWST ETC.',
-        epilog='For gas output, -m uses the Jorda et al. (2008, ACM, 8046) correlation Q=10**(30.675 - 0.2453 * mH), where mH is heliocentric magnitude.  This assumes --h2o=1.0.  --gassy scales Q up a factor of 1.6, --dusty scales Q down by a factor of 1.6.  For dust output, -m uses MSK\'s prototype correlation 10**(-0.21 * mH + 5.69), scaled by 2.9 for --dusty and --gassy.',
+        epilog='For gas output, -m uses the Jorda et al. (2008, ACM, 8046) correlation Q=10**(30.675 - 0.2453 * mH), where mH is heliocentric magnitude.  This assumes --h2o=1.0.  --gassy and --dusty can be repeatedly used to scale the results.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
@@ -125,14 +124,16 @@ if __name__ == '__main__':
         help='indicates that --afrho or -Q is a total visual mangitude that should be converted before using')
 
     parser.add_argument(
-        '--dusty',
-        action='store_true',
-        help='indicates that the conversion from -m should assume a dusty coma')
+        '--dusty', '-d',
+        action='count',
+        default=0,
+        help='indicates that the conversion from -m should assume a dusty coma, repeated options increase dust/gas: Q/1.6|2.4|3.7, Afrho*4.8|23|110')
 
     parser.add_argument(
-        '--gassy',
-        action='store_true',
-        help='indicates that the conversion from -m should assume a gassy coma')
+        '--gassy', '-g',
+        action='count',
+        default=0,
+        help='indicates that the conversion from -m should assume a gassy coma, repeated options increase gas/dust: Q*1.6|2.4|3.7, Afrho/4.8|23|110')
 
     dust_or_gas = parser.add_mutually_exclusive_group(required=True)
     dust_or_gas.add_argument(
