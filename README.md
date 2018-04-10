@@ -1,0 +1,77 @@
+# jwst-comets
+Tools, tips, tricks for designing comet observations with JWST
+
+## estimations
+### jwst-comet-est.py
+```
+usage: jwst-comet-est.py [-h] [--aper APER] [-R R] [-m] [--dusty] [--gassy]
+                         (--afrho AFRHO | -Q Q) [--ef2af EF2AF]
+                         [--Tscale TSCALE] [--h2o H2O] [--co2 CO2] [--co CO]
+                         rh delta
+
+Generate model comet spectra for JWST ETC.
+
+positional arguments:
+  rh               heliocentric distance (au)
+  delta            observer-target distance (au)
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --aper APER      aperture radius (arcsec), or one of: ifu, fs200, fs400,
+                   fs1600, lrs, mrs, nircam (default: 0.2 arcsec)
+  -R R             spectral resolution (default: 10)
+  -m               indicates that --afrho or -Q is a total visual mangitude
+                   that should be converted before using (default: False)
+  --dusty, -d      indicates that the conversion from -m should assume a dusty
+                   coma, repeated options increase dust/gas: Q/1.6|2.4|3.7,
+                   Afrho*4.8|23|110 (default: 0)
+  --gassy, -g      indicates that the conversion from -m should assume a gassy
+                   coma, repeated options increase gas/dust: Q*1.6|2.4|3.7,
+                   Afrho/4.8|23|110 (default: 0)
+  --afrho AFRHO    dust mode based on this Afρ at 0 deg phase (cm) or total
+                   visual magnitude (requires -m) (default: None)
+  -Q Q             gas mode based on this scale factor (molecules/s) or total
+                   visual magnitude (requires -m) (default: None)
+
+dust options:
+  --ef2af EF2AF    the ratio εfρ/Afρ (default: 3.5)
+  --Tscale TSCALE  LTE blackbody temperature scale factor (default: 1.1)
+
+gas options:
+  --h2o H2O        relative H2O production rate (default: 1.0)
+  --co2 CO2        relative CO2 production rate (default: 0.15)
+  --co CO          relative CO production rate (default: 0.05)
+
+For gas output, -m uses the Jorda et al. (2008, ACM, 8046) correlation
+Q=10**(30.675 - 0.2453 * mH), where mH is heliocentric magnitude. This assumes
+--h2o=1.0. --gassy and --dusty can be repeatedly used to scale the results.
+
+```
+
+Generate a spectrum for a comet with Afρ=100 cm at rh=1.5 au, and Δ=1.0 au, as observed by MIRI LRS:
+```
+$ python3 jwst-comet-est.py 1.5 1.0 --afrho=100 --aper=lrs
+# %ECSV 0.9
+# ---
+# datatype:
+# - {name: wave, unit: um, datatype: float64}
+# - {name: total, unit: mJy, datatype: float64}
+# - {name: F_sca, unit: mJy, datatype: float64}
+# - {name: F_th, unit: mJy, datatype: float64}
+# meta: !!omap
+# - {cmd: jwst-comet-est.py 1.5 1.0 --afrho=100 --aper=lrs}
+# - {rh: 1.5 AU}
+# - {delta: 1.0 AU}
+# - {phase: 41.40962210927086 deg}
+# - {aper: "Rectangular aperture, dimensions 0.5\xD71.6 arcsec"}
+# - {phase function: 0.35918609535776413}
+# - {ef2af: 3.5}
+# - {Tscale: 1.1}
+# - {Afrho: 100.0 cm}
+# - {efrho: 350.0 cm}
+# schema: astropy-2.0
+wave total F_sca F_th
+0.5 0.0940997500909 0.0940997500909 4.58688730266e-43
+0.55 0.110780768521 0.110780768521 1.2231096487e-38
+...
+```
