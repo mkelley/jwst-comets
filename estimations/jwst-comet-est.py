@@ -134,6 +134,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-R',
         default=10,
+        type=int,
         help='spectral resolution'
     )
 
