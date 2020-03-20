@@ -4,9 +4,10 @@ Tools, tips, tricks for designing comet observations with JWST
 ## estimations
 ### jwst-comet-est.py
 ```
-usage: jwst-comet-est.py [-h] [--aper APER] [-R R] [-m] [--dusty] [--gassy]
-                         (--afrho AFRHO | -Q Q) [--ef2af EF2AF]
-                         [--Tscale TSCALE] [--h2o H2O] [--co2 CO2] [--co CO]
+usage: jwst-comet-est.py [-h] [--aper APER] [-R R] [--unit UNIT] [-m]
+                         [--dusty] [--gassy] (--afrho AFRHO | -Q Q)
+                         [--ef2af EF2AF] [--Tscale TSCALE] [--h2o H2O]
+                         [--co2 CO2] [--co CO] [-o O]
                          rh delta
 
 Generate model comet spectra for JWST ETC.
@@ -20,6 +21,8 @@ optional arguments:
   --aper APER      aperture radius (arcsec), or one of: ifu, fs200, fs400,
                    fs1600, lrs, mrs, nircam (default: 0.2 arcsec)
   -R R             spectral resolution (default: 10)
+  --unit UNIT      output spectral flux density or surface brightness unit
+                   (default: mJy/arcsec2)
   -m               indicates that --afrho or -Q is a total visual mangitude
                    that should be converted before using (default: False)
   --dusty, -d      indicates that the conversion from -m should assume a dusty
@@ -32,6 +35,7 @@ optional arguments:
                    visual magnitude (requires -m) (default: None)
   -Q Q             gas mode based on this scale factor (molecules/s) or total
                    visual magnitude (requires -m) (default: None)
+  -o O             save to this file name (default: None)
 
 dust options:
   --ef2af EF2AF    the ratio εfρ/Afρ (default: 3.5)
@@ -45,12 +49,11 @@ gas options:
 For gas output, -m uses the Jorda et al. (2008, ACM, 8046) correlation
 Q=10**(30.675 - 0.2453 * mH), where mH is heliocentric magnitude. This assumes
 --h2o=1.0. --gassy and --dusty can be repeatedly used to scale the results.
-
 ```
 
 Generate a spectrum for a comet with Afρ=100 cm at rh=1.5 au, and Δ=1.0 au, as observed by MIRI LRS:
 ```
-$ python3 jwst-comet-est.py 1.5 1.0 --afrho=100 --aper=lrs
+$ python3 jwst-comet-est.py 1.5 1.0 --afrho=100 --aper=lrs --unit=mJy
 # %ECSV 0.9
 # ---
 # datatype:
@@ -59,19 +62,24 @@ $ python3 jwst-comet-est.py 1.5 1.0 --afrho=100 --aper=lrs
 # - {name: F_sca, unit: mJy, datatype: float64}
 # - {name: F_th, unit: mJy, datatype: float64}
 # meta: !!omap
-# - {cmd: jwst-comet-est.py 1.5 1.0 --afrho=100 --aper=lrs}
+# - {cmd: estimations/jwst-comet-est.py 1.5 1.0 --afrho=100 --aper=lrs --unit=mJy}
 # - {rh: 1.5 AU}
 # - {delta: 1.0 AU}
 # - {phase: 41.40962210927086 deg}
 # - {aper: "Rectangular aperture, dimensions 0.5\xD71.6 arcsec"}
-# - {phase function: 0.35918609535776413}
+# - phase function: !numpy.ndarray
+#     buffer: !!binary |
+#       aUZRdnJlZjgxajg9
+#     dtype: float64
+#     order: C
+#     shape: !!python/tuple [1]
 # - {ef2af: 3.5}
 # - {Tscale: 1.1}
 # - {Afrho: 100.0 cm}
 # - {efrho: 350.0 cm}
 # schema: astropy-2.0
 wave total F_sca F_th
-0.5 0.0940997500909 0.0940997500909 4.58688730266e-43
-0.55 0.110780768521 0.110780768521 1.2231096487e-38
+0.5 0.09409975009087415 0.09409975009087415 1.088440633433928e-41
+0.55 0.110780768520771 0.110780768520771 1.93395762848993e-37
 ...
 ```

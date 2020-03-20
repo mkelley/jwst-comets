@@ -1,11 +1,16 @@
+#!/usr/bin/env python3
 import sys
 import argparse
+from collections import OrderedDict
+import logging
+
 import numpy as np
 import astropy.units as u
+from astropy.table import Table
+from sbpy.activity import Afrho, Efrho
+from sbpy.activity import RectangularAperture
 
 def aperture(a):
-    from sbpy.activity import RectangularAperture
-    
     if a == 'ifu':
         aper = u.Quantity(0.2, u.arcsec)
     elif a == 'fs200':
@@ -20,10 +25,10 @@ def aperture(a):
         aper = u.Quantity(1.3, u.arcsec)
     elif a == 'nircam':
         aper = u.Quantity(0.13, u.arcsec)
-    elif isinstance(a, (float, int)):
-        aper = u.Quantity(a, u.arcsec)
     else:
-        raise argparse.ArgumentError('Invalid --aper: {}'.format(str(aper)))
+        aper = u.Quantity(float(a), u.arcsec)
+    #else:
+    #    raise argparse.ArgumentError('Invalid --aper: {}'.format(str(a)))
 
     return aper
 
@@ -35,15 +40,15 @@ def constant_spectral_resolution(start, stop, R):
 
 def estimate(args):
     """args - command-line arguments"""
-    from collections import OrderedDict
-    
     # deduce phase angle, assume JWST at 1.0 au
     cosPhase = ((args.rh**2 + args.delta**2 - 1.0**2)
                 / (2 * args.rh * args.delta))
+    phase = np.degrees(np.arccos(cosPhase))
+    logging.info('Phase angle = {:.1f}'.format(phase))
     eph = dict(
         rh=u.Quantity(args.rh, u.au),
         delta=u.Quantity(args.delta, u.au),
-        phase=u.Quantity(np.degrees(np.arccos(cosPhase)), u.deg)
+        phase=u.Quantity(phase, u.deg)
     )
 
     meta = OrderedDict()
@@ -56,15 +61,12 @@ def estimate(args):
     if args.afrho is not None:
         est = dust_estimate(eph, args, meta)
     else:
-        raise NotImplemented('gas estimates are not yet implemented')
-        est = gas_estimate(eph, args, meta)
+        raise NotImplementedError('gas estimates are not yet implemented')
+        #est = gas_estimate(eph, args, meta)
 
     return est
 
 def dust_estimate(eph, args, meta):
-    from astropy.table import Table
-    from sbpy.activity import Afrho, Efrho
-
     wave = constant_spectral_resolution(0.5, 30, args.R)
     wave = u.Quantity(wave, 'um')
     if args.m:
@@ -76,8 +78,25 @@ def dust_estimate(eph, args, meta):
 
     efrho = Efrho(args.ef2af * afrho)
 
-    fsca = afrho.fluxd(wave, args.aper, eph, phasecor=True, unit='mJy')
-    fth = efrho.fluxd(wave, args.aper, eph, unit='mJy', Tscale=args.Tscale)
+    if isinstance(args.aper, RectangularAperture):
+        area = args.aper.shape[0] * args.aper.shape[1]
+    else:
+        area = np.pi * args.aper**2
+
+    if args.unit.is_equivalent('mJy/arcsec2') or args.unit.is_equivalent('W/(m2 um sr)'):
+        # user requested surface brightness units
+        surface_brightness = True
+        unit = args.unit * area
+    else:
+        surface_brightness = False
+        unit = args.unit
+
+    fsca = afrho.to_fluxd(wave, args.aper, eph, phasecor=True, unit=unit)
+    fth = efrho.to_fluxd(wave, args.aper, eph, unit=unit, Tscale=args.Tscale)
+    if surface_brightness:
+        fsca = (fsca / area).to(args.unit)
+        fth = (fth / area).to(args.unit)
+
     est = Table(data=(wave, fsca + fth, fsca, fth),
                 names=('wave', 'total', 'F_sca', 'F_th'))
 
@@ -116,6 +135,13 @@ if __name__ == '__main__':
         '-R',
         default=10,
         help='spectral resolution'
+    )
+
+    parser.add_argument(
+        '--unit',
+        type=u.Unit,
+        default='mJy/arcsec2',
+        help='output spectral flux density or surface brightness unit'
     )
 
     parser.add_argument(
@@ -174,6 +200,12 @@ if __name__ == '__main__':
         default=0.05,
         help='relative CO production rate')
 
+    parser.add_argument(
+        '-o',
+        help='save to this file name'
+    )
+
     args = parser.parse_args()
     est = estimate(args)
-    est.write(sys.stdout, format='ascii.ecsv')
+    outf = sys.stdout if args.o is None else args.o
+    est.write(outf, format='ascii.ecsv')
