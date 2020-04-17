@@ -1,6 +1,13 @@
 # jwst-comets
 Tools, tips, tricks for designing comet observations with JWST
 
+## Tips
+### Power-law profile
+
+Cometary comae have surface brightness profiles that tend to follow a radial power-law.  The ideal coma is proportional to 1/ρ, where ρ is the distance to the nucleus.  The JWST ETC has a power-law surface brightness profile.  The central core of that profile is flat, then it follows 1/ρ thereafter.  This can be used for comets, but with caution.  In order to faithfully reproduce a cometary scene, the central core must be smaller than the pixel size of the instrument in question.
+
+Based on the script `etc-profile-test.py`, I recommend the following.  Let `I_0.5` be the mean surface brightness of your coma within a 0.5 mas radius aperture.  For the ETC, set the inner core to 1 mas radius, and the surface brightness to the value of `I_0.5`.  Note the factor of 2 discrepancy.  This difference is needed to make the surface radial brightness outside of the core correct.
+
 ## estimations
 ### jwst-comet-est.py
 ```
