@@ -10,6 +10,7 @@ from astropy.table import Table
 from sbpy.activity import Afrho, Efrho
 from sbpy.activity import RectangularAperture
 
+
 def aperture(a):
     if a == 'ifu':
         aper = u.Quantity(0.2, u.arcsec)
@@ -27,16 +28,18 @@ def aperture(a):
         aper = u.Quantity(0.13, u.arcsec)
     else:
         aper = u.Quantity(float(a), u.arcsec)
-    #else:
+    # else:
     #    raise argparse.ArgumentError('Invalid --aper: {}'.format(str(a)))
 
     return aper
+
 
 def constant_spectral_resolution(start, stop, R):
     # from mskpy
     d = 1 + 1 / R
     n = int(np.ceil(np.log(stop / start) / np.log(d)))
     return start * d**np.arange(n)
+
 
 def estimate(args):
     """args - command-line arguments"""
@@ -65,6 +68,7 @@ def estimate(args):
         #est = gas_estimate(eph, args, meta)
 
     return est
+
 
 def dust_estimate(eph, args, meta):
     wave = constant_spectral_resolution(0.5, 30, args.R)
@@ -109,6 +113,7 @@ def dust_estimate(eph, args, meta):
     est.meta['efrho'] = str(efrho)
 
     return est
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -166,7 +171,7 @@ if __name__ == '__main__':
     dust_or_gas.add_argument(
         '--afrho',
         type=float,
-        help='dust mode based on this Afρ at 0 deg phase (cm) or total visual magnitude (requires -m)')
+        help='dust mode based on this Afρ at 0 deg phase (cm) or total visual magnitude (EXPERIMENTAL, requires -m)')
     dust_or_gas.add_argument(
         '-Q',
         type=float,

@@ -10,6 +10,17 @@ Based on the script `etc-profile-test.py`, I recommend the following.  Let `I_0.
 
 ## estimations
 ### jwst-comet-est.py
+
+---
+**Warning**
+
+* Conversions from total visual magnitude to dust Afρ is experimental.
+
+* Gas output is not yet implemented.
+
+---
+
+
 ```
 usage: jwst-comet-est.py [-h] [--aper APER] [-R R] [--unit UNIT] [-m]
                          [--dusty] [--gassy] (--afrho AFRHO | -Q Q)
