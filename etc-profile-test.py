@@ -48,6 +48,8 @@ print('{} aperture from image (and ratio): {:.4f} ({:.4f})'.format(
 # coma within an aperture is the surface brightness at 1/2 the aperture radius.
 # Repeat the exercise, but with the disk at 1/2 the brightness (using 0.5 mas
 # radius in the Afrho call).
+
+# NOTE THAT THE SURFACE BRIGHTNESS IS COMPUTED WITH 1 mas!
 fluxd = afrho.to_fluxd(filt, 0.5 * u.mas, eph, unit=u.mJy)
 coma2 = 1 / rho * fluxd / (1 * u.mas)**2 / np.pi
 coma_rescaled2 = (
@@ -58,4 +60,4 @@ print('{} aperture from revised image (and ratio): {:.4f} ({:.4f})'.format(
     rap, fluxd, fluxd / fluxd0))
 # 0.0845 mJy (0.9920)
 
-# The result is low by 0.8%, an accetable tolerance for ETC purposes.
+# The result is low by 0.8%, an acceptable tolerance for ETC purposes.
