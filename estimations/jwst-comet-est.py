@@ -105,8 +105,8 @@ def dust_estimate(eph, args, meta):
                 names=('wave', 'total', 'F_sca', 'F_th'))
 
     est.meta = meta
-    est.meta['phase function'] = Afrho(1, 'cm').to_phase(
-        eph['phase'], 0 * u.deg).value
+    est.meta['phase function'] = float(Afrho(1, 'cm').to_phase(
+        eph['phase'], 0 * u.deg).value)
     est.meta['ef2af'] = args.ef2af
     est.meta['Tscale'] = args.Tscale
     est.meta['Afrho'] = str(afrho)
