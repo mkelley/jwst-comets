@@ -16,7 +16,7 @@ Based on the script `etc-profile-test.py` and the notebook `notes/etc-profile-no
   - core radius to 0.001 arcsec (= 1 mas)
   - power law index to 1
 
-There is a difference of a factor of 2 between the core radius and the aperture radius used in the coma flux estimation tool.  This is necessary to for the correct normalization of the coma surface brightness.
+There is a difference of a factor of 2 between the core radius and the aperture radius used in the coma flux estimation tool.  This difference sets the correct normalization for the ETC coma surface brightness.
 
 ## estimations
 ### jwst-comet-est.py
