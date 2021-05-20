@@ -114,7 +114,8 @@ wave total F_sca F_th
 
 ## APT fixed moving targets
 
-As of May 2021, APT does not visualize moving targets.  Fixed targets may be used as a work around.  The best fixed targets use the ephemeris of the moving target in question.  To that end, the script `apt-fixed-moving-target.py` (in the `apt-targets` directory) may be used to generate a set of fixed targets centered on the object ephemeris.  You specify the date range and step size, only times when the target is observable by JWST are returned.
+As of May 2021, APT does not visualize moving targets. Instead, fixed targets may be used as a work around. The best fixed targets use the ephemeris of the moving target in question. To that end, the script `apt-fixed-moving-target.py` (in the `apt-targets` directory) generates a set of fixed targets centered on the object ephemeris.  You specify the date range and step size.  Only times when the target is observable by JWST are returned.
+
 
 ### Requirements
 * Python 3
@@ -149,6 +150,15 @@ optional arguments:
 Target names must be resolvable by JPL Horizons. Specifying --type=comet will use the "closest apparition" and "no fragment" search flags.
 ```
 
+There are two output modes: a plain text target list, and a JWST XML APT file.
+* The plain text target list can be imported into APT and each fixed target
+assigned to whatever observations you want.
+* The XML file can optionally include some dummy NIRCam observations,
+one for each ephemeris epoch.  The observations have position angle
+constraints, so that when they are viewed with APT, they already have
+the approximate (to the best of my knowledge) orientation for that
+ephemeris epoch.
+
 ### Examples
 #### Plain text table output
 A plain text table of targets can be generated.  This list helps identify the time periods an object is observable, and the position in the sky when it is observable.  It does not help understand the orientation of the instruments at those times.
@@ -176,7 +186,7 @@ See JDOX for instructions on how to [read these target lists](https://jwst-docs.
 #### XML output and generated observations
 Use `--xml` to generate an APT file in XML format, which can be imported into APT (File->Import->JWST XML file).
 
-Templated observations of your target may also be generated for NIRCam using `--nircam`.  The observations will have position angle and timing constraints based on the target-Sun angle and ephemeris epoch.  With the position angle constraint, the Aladin viewer will automatically give NIRCAM the orientation.  These constraints should not be used for designing real observations.
+Templated observations of your target may also be generated for NIRCam using `--nircam`.  The observations will have position angle and timing constraints based on the target-Sun angle and ephemeris epoch.  With the position angle constraint, the Aladin viewer will automatically give NIRCam the approximate orientation.  These constraints should not be used for designing real observations.
 
 ---
 **Warning**
