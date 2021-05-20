@@ -151,6 +151,8 @@ Target names must be resolvable by JPL Horizons. Specifying --type=comet will us
 
 ### Examples
 #### Plain text table output
+A plain text table of targets can be generated.  This list helps identify the time periods an object is observable, and the position in the sky when it is observable.  It does not help understand the orientation of the instruments at those times.
+
 Generate fixed targets for comet 238P, output as space-separated-value table
 ```
 $ python3 apt-fixed-moving-target.py 116P 2022-05-01 2022-07-01 --type=comet -o comet.txt
@@ -172,9 +174,9 @@ $ python3 apt-fixed-moving-target.py 599 2022-05-01 2023-05-01 --type=majorbody 
 See JDOX for instructions on how to [read these target lists](https://jwst-docs.stsci.edu/jwst-astronomers-proposal-tool-overview/apt-workflow-articles/apt-bulk-target-ingest#APTBulkTargetIngest-AccessingtheImporter) into APT.
 
 #### XML output and generated observations
-Use `--xml` to generate an APT file in XML format, which can be imported into APT.
+Use `--xml` to generate an APT file in XML format, which can be imported into APT (File->Import->JWST XML file).
 
-Templated observations of your target may also be generated for NIRCam using `--nircam`.  The observations will have position angle and timing constraints based on the target-Sun angle and ephemeris epoch.  With the position angle constraint, the Alandin viewer will automatically give NIRCAM the orientation.  These constraints should not be used for designing real observations.
+Templated observations of your target may also be generated for NIRCam using `--nircam`.  The observations will have position angle and timing constraints based on the target-Sun angle and ephemeris epoch.  With the position angle constraint, the Aladin viewer will automatically give NIRCAM the orientation.  These constraints should not be used for designing real observations.
 
 ---
 **Warning**
