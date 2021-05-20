@@ -198,4 +198,5 @@ The orientations are based on the target-Sun angle, which, to the best of my kno
 ```
 python3 apt-fixed-moving-target.py 116P 2022-05-01 2022-07-01 --type=comet --xml --nircam -o comet.xml
 ```
-![APT example NIRCam observation](apt-targets/apt-comet-example-vis.png)
+![APT, example NIRCam observation](apt-targets/apt-comet-example-vis.png)
+![APT, multiple example NIRCam observations](apt-targets/apt-comet-multi-example-vis.png)
