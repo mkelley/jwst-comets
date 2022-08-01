@@ -35,6 +35,8 @@ parser.add_argument('--xml', action='store_true',
                     help='format output as APT XML')
 parser.add_argument('--nircam', action='store_true',
                     help='observe with NIRCam (for XML output)')
+parser.add_argument('--nirspec-ifu', action='store_true',
+                    help='observe with NIRSpec IFU (for XML output)')
 parser.add_argument('--no-cache', action='store_true',
                     help='do not use cached ephemeris')
 args = parser.parse_args()
@@ -192,6 +194,13 @@ def eph_to_xml(eph):
 </ObservationGroup>
 ''', xml_parser)
 
+    if args.nirspec_ifu:
+        nirspec_ifu = etree.XML('''
+<ObservationGroup>
+    <Label>NIRSpec IFU</Label>
+</ObservationGroup>
+''', xml_parser)
+
     target = ''.join([c if c.isalnum() else '.' for c in eph['targetname'][0]])
     for i in range(len(eph)):
         target_id = f"{target}.at.{eph['date'][i].isot[:13]}"
@@ -276,8 +285,77 @@ def eph_to_xml(eph):
 </Observation>
 ''', xml_parser))
 
+        if args.nirspec_ifu:
+            after, before = format_between(eph[i])
+            nirspec_ifu.append(etree.XML(f'''
+<Observation AutoTarget="false">
+    <Number>{i + 101}</Number>
+    <TargetID>{target_id}</TargetID>
+    <Label>Spectrum</Label>
+    <Instrument>NIRSPEC</Instrument>
+    <Template xmlns:nsifus="http://www.stsci.edu/JWST/APT/Template/NirspecIFUSpectroscopy">
+        <nsifus:NirspecIFUSpectroscopy>
+            <nsifus:TaMethod>VERIFY_ONLY</nsifus:TaMethod>
+            <nsifus:PointingVerificationImage xmlns:ns="http://www.stsci.edu/JWST/APT/Instrument/Nirspec">
+                <ns:Filter>CLEAR</ns:Filter>
+                <ns:ReadoutPattern>NRSIRS2RAPID</ns:ReadoutPattern>
+                <ns:Groups>10</ns:Groups>
+                <ns:Integrations>1</ns:Integrations>
+                <ns:EtcId></ns:EtcId>
+                <ns:MsaAcquisitionConfigFile>ALLCLOSED</ns:MsaAcquisitionConfigFile>
+            </nsifus:PointingVerificationImage>
+            <nsifus:DitherType>CYCLING</nsifus:DitherType>
+            <nsifus:DitherSize>LARGE</nsifus:DitherSize>
+            <nsifus:StartingPoint>1</nsifus:StartingPoint>
+            <nsifus:NumberOfPoints>16</nsifus:NumberOfPoints>
+            <nsifus:Exposures>
+                <nsifus:Exposure>
+                    <nsifus:Grating>PRISM</nsifus:Grating>
+                    <nsifus:Filter>CLEAR</nsifus:Filter>
+                    <nsifus:ReadoutPattern>NRSIRS2</nsifus:ReadoutPattern>
+                    <nsifus:Groups>20</nsifus:Groups>
+                    <nsifus:Integrations>1</nsifus:Integrations>
+                    <nsifus:EtcId>59382.63</nsifus:EtcId>
+                    <nsifus:Autocal>NONE</nsifus:Autocal>
+                    <nsifus:Leakcal>false</nsifus:Leakcal>
+                    <nsifus:Dither>true</nsifus:Dither>
+                </nsifus:Exposure>
+            </nsifus:Exposures>
+        </nsifus:NirspecIFUSpectroscopy>
+    </Template>
+    <ScienceDuration>23344</ScienceDuration>
+    <CoordinatedParallel>false</CoordinatedParallel>
+    <SpecialRequirements>
+        <Between After="{after}" Before="{before}"/>
+        <OrientRange OrientMin="{eph['sunTargetPA'][i] - 3:.0f} Degrees" OrientMax="{eph['sunTargetPA'][i] + 3:.0f} Degrees" MsaSelectedAngle="false"/>
+    </SpecialRequirements>
+    <MosaicParameters>
+        <Rows>1</Rows>
+        <Columns>1</Columns>
+        <RowOverlapPercent>10.0</RowOverlapPercent>
+        <ColumnOverlapPercent>10.0</ColumnOverlapPercent>
+        <SkewDegreesX>0.0</SkewDegreesX>
+        <SkewDegreesY>0.0</SkewDegreesY>
+        <MosaicTiles TileNumber="1">
+            <TileState>Tile Included</TileState>
+        </MosaicTiles>
+        <MosaicTileOrder>DEFAULT</MosaicTileOrder>
+    </MosaicParameters>
+    <ObservingWindowsContainer>
+        <ObservingWindowSpec xsi:type="DefaultAngularVelocityWindow" Object1="1 HALE-BOPP" Object2="" Observer="JWST" Velocity="0.03" Condition="LESS THAN" Within="Within" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+        <MOSSStartDate></MOSSStartDate>
+        <MOSSEndDate></MOSSEndDate>
+        <MOSSShowWindows>false</MOSSShowWindows>
+    </ObservingWindowsContainer>
+    <Visit Number="1"/>
+</Observation>
+''', xml_parser))
+
     if args.nircam:
         data_requests.append(nircam)
+
+    if args.nirspec_ifu:
+        data_requests.append(nirspec_ifu)
 
     return etree.ElementTree(root)
 
