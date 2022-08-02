@@ -11,7 +11,7 @@ For JWST GO 2127, our team observed comet C/1995 O1 (Hale-Bopp) with NIRCam to m
 Details on our observation sequence can be obtained via the [information page for program GO 2127](https://www.stsci.edu/jwst/science-execution/program-information.html?id=2127) at the Space Telescope Science Institute.  A brief summary follows.  At the time of the observation, comet Hale-Bopp had a non-sidereal motion of about 3.2"/hr (0.89 mas/s).  The imaging sequence spanned a time period of 2300 s, during which the comet moved 2.0".  Two integrations were taken with a small dither motion between them.  The comet was simultaneously observed with NIRCam's B1 and B5 (AKA, Blong) detectors with the F182M and F360M filters, respectively.
 
 
-## Absolute timing
+## Absolute Timing
 
 To produce useful astrometry, we needed to estimate the observation time of the comet.  Uncalibrated data products (uncal files) have an extension named INT_TIMES, which lists the start, middle, and end integration times for the first pixel read out in an array.
 
