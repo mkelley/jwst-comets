@@ -35,7 +35,7 @@ Marco Micheli led the astrometric measurements.  Thanks to Bryan Hilbert and Tyl
 ## Notes
 
 From Bryan Hilbert (2022 July 28):
-> I wrote long ago to calculate the total exposure time of a frame: https://github.com/spacetelescope/mirage/blob/master/mirage/utils/utils.py#L93
+> [A function] I wrote long ago to calculate the total exposure time of a frame: https://github.com/spacetelescope/mirage/blob/master/mirage/utils/utils.py#L93
 > 
 > The function can also be used to calculated the exposure time for each pixel, with a little modification. The 251ms you mentioned is made up of a 12 pixel (120 microsec) overhead associated with each row (colpad in the equation), plus a 1-row (512+12 pixel, 5240 microsec) overhead at the end of the frame. There's also a further 10 microsecond overhead at the end of the frame before moving on to the next.
 
