@@ -1,0 +1,23 @@
+#ASDF 1.0.0
+#ASDF_STANDARD 1.5.0
+%YAML 1.1
+%TAG ! tag:stsci.edu:asdf/
+--- !core/asdf-1.1.0
+asdf_library: !core/software-1.0.0 {author: The ASDF Developers, homepage: 'http://github.com/asdf-format/asdf',
+  name: asdf, version: 2.13.0}
+history:
+  extensions:
+  - !core/extension_metadata-1.0.0
+    extension_class: asdf.extension.BuiltinExtension
+    software: !core/software-1.0.0 {name: asdf, version: 2.13.0}
+class: jwst.pipeline.calwebb_spec2.Spec2Pipeline
+name: Spec2Pipeline
+parameters:
+  input_dir: ./
+  save_results: true
+steps:
+- class: jwst.background.background_step.BackgroundStep
+  name: bkg_subtract
+  parameters:
+    skip: true
+...
