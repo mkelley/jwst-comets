@@ -22,4 +22,6 @@ Science product info (e.g., FITS extensions):
 Calibration files at:
 <https://jwst-crds-pub.stsci.edu/> (best current values) or <https://jwst-crds.stsci.edu/> (current operational pipeline @STScI)
 
+Updated NIRCam calibration constants, ca. Aug 2022: [Boyer et al. 2022](https://arxiv.org/abs/2209.03348) ([data behind the figure](https://ers-stars.github.io/data/boyer2022_nircamoffsets.txt)).
+
 Author: Michael S. P. Kelley
