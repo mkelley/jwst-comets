@@ -1,5 +1,7 @@
 # NIRSpec
 
+> :warning: **Column cleaning** is best done on the uncal files at the group level.  The script below cleans the columns in the rate file.
+
 ## Backgrounds
 
 The script [backgrounds/spec2.py](backgrounds/spec2.py) processes NIRSpec observations of comet 22P/Kopff from program 1252, removing sky background and vertical striping, then processing the results with the JWST stage 2 spectroscopic pipeline.
