@@ -153,7 +153,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-m",
         action="store_true",
-        help="indicates that --afrho or -Q is a total visual mangitude that should be converted before using",
+        help="indicates that --afrho or -Q is a total visual magnitude that should be converted before using",
     )
 
     parser.add_argument(
