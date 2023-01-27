@@ -128,6 +128,8 @@ def dust_estimate(eph, args, meta):
     est.meta["Tscale"] = args.Tscale
     est.meta["Afrho"] = str(afrho)
     est.meta["efrho"] = str(efrho)
+    est.meta["S"] = str(args.S * u.percent / sbu.hundred_nm)
+    est.meta["wave0"] = str(args.wave0 * u.um)
 
     return est
 
