@@ -7,6 +7,7 @@ Tools, tips, tricks for comet observations with JWST.  Some may even be useful f
 * For some tips measuring astrometry with NIRCam, see [astrometry](astrometry/).
 * To plot the fields of view of JWST data with respect to a moving target position, see [instrument-fov](instrument-fov/).
 * For some tips on processing NIRSpec data, see [nirspec](nirspec/).
+* I tried to do some cube cleaning on MIRI data with mixed results, see [cube-cleaning](cube-cleaning/)
 
 ## References
 
