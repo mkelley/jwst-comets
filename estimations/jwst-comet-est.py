@@ -11,6 +11,8 @@ import astropy.units as u
 from astropy.table import Table
 from sbpy.activity import Afrho, Efrho
 from sbpy.activity import RectangularAperture
+from sbpy.spectroscopy import SpectralGradient, Reddening
+import sbpy.units as sbu
 
 
 def aperture(a):
@@ -102,6 +104,13 @@ def dust_estimate(eph, args, meta):
 
     fsca = afrho.to_fluxd(wave, args.aper, eph, phasecor=True, unit=unit)
     fth = efrho.to_fluxd(wave, args.aper, eph, unit=unit, Tscale=args.Tscale)
+
+    # spectral reddening
+    S = SpectralGradient(args.S * u.percent /
+                         sbu.hundred_nm, wave0=args.wave0 * u.um)
+    redden = Reddening(S)(wave)
+    fsca *= redden
+
     if surface_brightness:
         fsca = (fsca / area).to(args.unit)
         fth = (fth / area).to(args.unit)
@@ -119,6 +128,8 @@ def dust_estimate(eph, args, meta):
     est.meta["Tscale"] = args.Tscale
     est.meta["Afrho"] = str(afrho)
     est.meta["efrho"] = str(efrho)
+    est.meta["S"] = str(args.S * u.percent / sbu.hundred_nm)
+    est.meta["wave0"] = str(args.wave0 * u.um)
 
     return est
 
@@ -153,7 +164,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-m",
         action="store_true",
-        help="indicates that --afrho or -Q is a total visual mangitude that should be converted before using",
+        help="indicates that --afrho or -Q is a total visual magnitude that should be converted before using",
     )
 
     parser.add_argument(
@@ -193,6 +204,12 @@ if __name__ == "__main__":
         type=float,
         default=1.1,
         help="LTE blackbody temperature scale factor",
+    )
+    dust.add_argument(
+        "-S", type=float, default=0, help="redden the scattered spectrum with this gradient (%/100 nm)"
+    )
+    dust.add_argument(
+        "--wave0", type=float, default=0.6, help="normalization point for the spectral gradient"
     )
 
     gas = parser.add_argument_group(title="gas options")
