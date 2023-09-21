@@ -46,7 +46,7 @@ def constant_spectral_resolution(start, stop, R):
 
 
 def estimate(args):
-    """args - command-line arguments"""
+    """args : command-line arguments"""
     # deduce phase angle, assume JWST at 1.0 au
     cosPhase = (args.rh**2 + args.delta**2 - 1.0**2) / (
         2 * args.rh * args.delta
@@ -66,11 +66,7 @@ def estimate(args):
     meta["phase"] = str(eph["phase"])
     meta["aper"] = str(args.aper)
 
-    if args.afrho is not None:
-        est = dust_estimate(eph, args, meta)
-    else:
-        raise NotImplementedError("gas estimates are not yet implemented")
-        # est = gas_estimate(eph, args, meta)
+    est = dust_estimate(eph, args, meta)
 
     return est
 
@@ -78,7 +74,10 @@ def estimate(args):
 def dust_estimate(eph, args, meta):
     wave = constant_spectral_resolution(0.5, 30, args.R)
     wave = u.Quantity(wave, "um")
-    if args.m:
+    if args.m is not None:
+        logging.warning(
+            "Conversion from total magnitude to Afρ uses an unverified approach."
+        )
         mH = args.m - 5 * np.log10(eph["delta"].to("au").value)
         afrho = Afrho(10 ** (-0.17 * mH + 3.77), "cm")
         afrho *= 10 ** (0.69 * (args.dusty - args.gassy))
@@ -137,7 +136,7 @@ def dust_estimate(eph, args, meta):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Generate model comet spectra for JWST ETC.",
-        epilog="For gas output, -m uses the Jorda et al. (2008, ACM, 8046) correlation Q=10**(30.675 - 0.2453 * mH), where mH is heliocentric magnitude.  This assumes --h2o=1.0.  --gassy and --dusty can be repeatedly used to scale the results.",
+        epilog="--gassy and --dusty can be repeatedly used to scale the results.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("rh", type=float, help="heliocentric distance (au)")
@@ -161,10 +160,22 @@ if __name__ == "__main__":
         help="output spectral flux density or surface brightness unit",
     )
 
-    parser.add_argument(
+    dust_basis = parser.add_mutually_exclusive_group(required=True)
+    dust_basis.add_argument(
+        "--afrho",
+        type=float,
+        help="dust brightness based on this Afρ at 0 deg phase (cm)",
+    )
+    dust_basis.add_argument(
         "-m",
+        type=float,
+        help="total visual magnitude that will be converted to Afρ (non-validated approach)",
+    )
+
+    parser.add_argument(
+        "-y",
         action="store_true",
-        help="indicates that --afrho or -Q is a total visual magnitude that should be converted before using",
+        help="accept that the conversion from m to Afρ has not been verified"
     )
 
     parser.add_argument(
@@ -183,17 +194,11 @@ if __name__ == "__main__":
         help="indicates that the conversion from -m should assume a gassy coma, repeated options increase gas/dust: Q*1.6|2.4|3.7, Afrho/4.8|23|110",
     )
 
-    dust_or_gas = parser.add_mutually_exclusive_group(required=True)
-    dust_or_gas.add_argument(
-        "--afrho",
-        type=float,
-        help="dust mode based on this Afρ at 0 deg phase (cm) or total visual magnitude (EXPERIMENTAL, requires -m)",
-    )
-    dust_or_gas.add_argument(
-        "-Q",
-        type=float,
-        help="gas mode based on this scale factor (molecules/s) or total visual magnitude (requires -m)",
-    )
+    # dust_or_gas.add_argument(
+    #     "-Q",
+    #     type=float,
+    #     help="gas mode based on this scale factor (molecules/s) or total visual magnitude (requires -m)",
+    # )
 
     dust = parser.add_argument_group(title="dust options")
     dust.add_argument(
@@ -206,26 +211,32 @@ if __name__ == "__main__":
         help="LTE blackbody temperature scale factor",
     )
     dust.add_argument(
-        "-S", type=float, default=0, help="redden the scattered spectrum with this gradient (%/100 nm)"
+        "-S", type=float, default=0, help="redden the scattered spectrum with this gradient (%%/100 nm)"
     )
     dust.add_argument(
         "--wave0", type=float, default=0.6, help="normalization point for the spectral gradient"
     )
 
-    gas = parser.add_argument_group(title="gas options")
-    gas.add_argument(
-        "--h2o", type=float, default=1.0, help="relative H2O production rate"
-    )
-    gas.add_argument(
-        "--co2", type=float, default=0.15, help="relative CO2 production rate"
-    )
-    gas.add_argument(
-        "--co", type=float, default=0.05, help="relative CO production rate"
-    )
+    # gas = parser.add_argument_group(title="gas options")
+    # gas.add_argument(
+    #     "--h2o", type=float, default=1.0, help="relative H2O production rate"
+    # )
+    # gas.add_argument(
+    #     "--co2", type=float, default=0.15, help="relative CO2 production rate"
+    # )
+    # gas.add_argument(
+    #     "--co", type=float, default=0.05, help="relative CO production rate"
+    # )
 
     parser.add_argument("-o", help="save to this file name")
 
     args = parser.parse_args()
+
+    if (args.m is not None) and not args.y:
+        logging.error(
+            "Conversion from total magnitude to Afρ uses an unverified approach.  Use the `-y` parameter to accept this caveat and proceed.")
+        sys.exit()
+
     est = estimate(args)
     outf = sys.stdout if args.o is None else args.o
     est.write(outf, format="ascii.ecsv")
